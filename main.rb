@@ -3,7 +3,7 @@ require 'parallel'
 
 RESULTING_CURRENCY = 'GBP'
 RESULTING_CURRENCY_REGEX = /GBP$/
-BLACKLIST = ["SHIBBTC","BTCSHIB","SHIBGBP"]
+BLACKLIST = ["SHIBBTC","BTCSHIB","SHIBGBP","WBTCETH"]
 
 # put your api key and secret in these Environmental variables on your system
 binance = Binance::Client::REST.new(api_key:ENV['binance-scout-key'],secret_key:ENV['binance-scout-secret'])
@@ -91,7 +91,7 @@ results = Parallel.map(TRADE2_SET,in_threads:TRADE2_SET.length) do |trade|
         # puts trade2.is_a? Array
         # puts trade3.is_a? Array
 
-        {:trade1 => trade1['symbol'],:trade2 => trade2['symbol'],:trade3 => trade3['symbol'],:ask1 => trade1['askPrice'],:ask2 => trade2['askPrice'],:ask3 => trade3['askPrice'],:product => calculate_result(trade1, trade2, trade3) }
+        {:trade1 => trade1['symbol'],:trade2 => trade2['symbol'],:trade3 => trade3['symbol'],:ask1 => trade1['askPrice'],:ask2 => trade2['askPrice'],:ask3 => trade3['askPrice'],:result => calculate_result(trade1, trade2, trade3) }
         rescue
           nil
         end
@@ -99,6 +99,8 @@ results = Parallel.map(TRADE2_SET,in_threads:TRADE2_SET.length) do |trade|
     end
   end
 
-results = results.flatten(3).compact.select(){|chain| chain[:product].is_a?(Float) && !chain[:product].nan? }
-results = results.sort_by(){|result| result[:product]}
+results = results.flatten(3).compact.select(){|chain| chain[:result].is_a?(Float) && !chain[:result].nan? }
+results = results.sort_by(){|result| result[:result]}
+results = results.uniq
+# result is ratio of 1 resulting  currency in to resulting currency out
 puts results
