@@ -69,5 +69,5 @@ results = Parallel.map(TRADE2_SET,in_threads:TRADE2_SET.length) do |trade|
 results = results.flatten(3).compact.select(){|chain| chain[:result].is_a?(Float) && !chain[:result].nan? }
 results = results.sort_by(){|result| result[:result]}
 results = results.uniq
-# result is the profit of 1 resulting currency in, displayed in resulting currency out
+# result is the profit from resulting currency in, displayed in resulting currency out
 puts results
