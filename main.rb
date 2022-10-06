@@ -71,7 +71,8 @@ TRADE3_SET = RESULTING_CURRENCY_ORDERS
 
 def calculate_result(trade1, trade2, trade3)
   product = trade1['askPrice'].to_f * trade2['askPrice'].to_f * trade3['askPrice'].to_f
-  product / trade1['askPrice'].to_f
+  product = product / trade1['askPrice'].to_f
+  product - trade1['askPrice'].to_f
 end
 
 results = Parallel.map(TRADE2_SET,in_threads:TRADE2_SET.length) do |trade|
@@ -102,5 +103,5 @@ results = Parallel.map(TRADE2_SET,in_threads:TRADE2_SET.length) do |trade|
 results = results.flatten(3).compact.select(){|chain| chain[:result].is_a?(Float) && !chain[:result].nan? }
 results = results.sort_by(){|result| result[:result]}
 results = results.uniq
-# result is ratio of 1 resulting  currency in to resulting currency out
+# result is the profit of 1 resulting currency in, displayed in resulting currency out
 puts results
