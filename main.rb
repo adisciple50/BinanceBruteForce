@@ -3,7 +3,8 @@ require 'parallel'
 
 RESULTING_CURRENCY = 'GBP'
 RESULTING_CURRENCY_REGEX = /GBP$/
-BLACKLIST = ["SHIBBTC","BTCSHIB","SHIBGBP","WBTCETH",'SSVETH',"CRVETH"]
+# BLACKLIST = ["SHIBBTC","BTCSHIB","SHIBGBP","WBTCETH",'SSVETH',"CRVETH"]
+BLACKLIST = []
 
 # put your api key and secret in these Environmental variables on your system
 binance = Binance::Client::REST.new(api_key:ENV['binance-scout-key'],secret_key:ENV['binance-scout-secret'])
@@ -18,7 +19,7 @@ def resulting_currency_pairs
 end
 
 def remove_resulting_currency(order)
-  order['symbol'].delete_prefix(RESULTING_CURRENCY).delete_suffix(RESULTING_CURRENCY)
+  order['symbol'].delete_suffix(RESULTING_CURRENCY)
 end
 
 RESULTING_CURRENCY_PAIRS = Parallel.map(RESULTING_CURRENCY_ORDERS,in_threads:RESULTING_CURRENCY_ORDERS.length) do |order|
@@ -31,12 +32,14 @@ TRADE1_SET = RESULTING_CURRENCY_ORDERS
 TRADE2_SET = Parallel.map(RESULTING_CURRENCY_ORDERS,in_threads:RESULTING_CURRENCY_ORDERS.length) do |order|
   # trade1 is order
   search = remove_resulting_currency(order)
-  {order => ORDER_BOOK.select(){|trade| trade['symbol'].include? search }}
+  {order => ORDER_BOOK.select(){|trade| trade['symbol'].match(/^#{search}/) }}
 end
 
 def get_matching(trade,order_set,resulting_currency_pairs)
   resulting_currency_pairs.map do |pair|
-    if trade['symbol'].include? pair
+    check = Regexp.new("^#{pair}").match? trade['symbol']
+    check2 = Regexp.new("#{pair}$").match? trade['symbol']
+    if check || check2
       order_set.select{|order| order['symbol'] == "#{pair}#{RESULTING_CURRENCY}"}
     end
   end
