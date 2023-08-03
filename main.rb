@@ -80,8 +80,8 @@ results = Parallel.map(trade_two_set, in_threads: trade_two_set.length) do |trad
 
 results = results.flatten(4).compact.select(){|chain| chain[:result].is_a?(Float) && !chain[:result].nan? }
 results = results.sort_by(){|result| result[:result]}
-results = results.uniq.select() {|chain| chain[:result] >= 1.225 && !chain[:result].to_f.infinite? }
-# results = results.uniq.select() {|chain| !chain[:result].to_f.infinite? }
+results = results.uniq.select() {|chain| chain[:result] >= 1.225 && chain[:result].to_f.finite? }
+# results = results.uniq.select() {|chain| chain[:result].to_f.finite? }
 # result is the cross rate from resulting currency in, displayed in resulting currency out
   puts "scanning"
   puts results[-1]
